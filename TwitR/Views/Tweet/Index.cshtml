@@ -1,0 +1,134 @@
+﻿@model TwitR.Models.TweetListViewModel
+
+@{
+    ViewData["Title"] = "Anasayfa";
+}
+
+<div class="float-right">
+    @if (Model.LoginUser != null)
+    {
+        <span>@Model.LoginUser.UserName</span>
+        <input />
+    }
+    else
+    {
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#userLoginModal">Giriş Yap</button>
+    }
+</div>
+
+<br>
+<div id="tweetList">
+
+    @if (Model.Tweets != null)
+    {
+        @foreach (var item in Model.Tweets)
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="tweet-label border">@item.TweetText</label>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<div class="row">
+    <div class="col-md-12 text-center">
+        <button type="button" id="btnTweetSend" class="btn btn-primary" data-toggle="modal" data-target="#tweetSendModal">
+            Tweet At
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="tweetSendModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tweet At</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <textarea class="form-control" id="tweetSendText" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="tweetSend">Gönder</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Login" data-ajax-method="POST" data-ajax="true" data-ajax-update="userLogin" data-ajax-complete="OnComplete">
+    <div class="modal fade" tabindex="-1" role="dialog" id="userLoginModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Giriş Yap</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="userLogin">
+                    <partial name="~/Views/Shared/_UserLoginPartial.cshtml" model="@Model" />
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    <script>
+        $(document).ready(function() {
+            var connection = new signalR.HubConnectionBuilder().withUrl("/TweetHub").build();
+
+            $("#btnTweetSend").prop('disabled', true);
+
+            connection.start().then(function() {
+                $("#btnTweetSend").prop('disabled', false);
+
+            }).catch(function(err) {
+                console.error(err.toString());
+            });
+
+            connection.on("ReceiveTweet", function(receivedTweet) {
+                console.log("receivedTweet" + receivedTweet);
+                let html = '';
+                html = `<div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="tweet-label border">${receivedTweet.TweetText}</label>
+                                                </div>
+                                            </div>
+                                        </div>`;
+
+                $("#tweetList").append(html);
+            });
+
+
+            connection.on("GetCurrentUser", function(currentUser) {
+                console.log(currentUser);
+            });
+
+            $("#tweetSend").click(function() {
+                let tweetText = $("#tweetSendText").val();
+                connection.invoke("SendTweet", tweetText, connectionId).catch(function(err) {
+                    return console.error(err.toString());
+                });
+            });
+
+            function OnComplete() {
+                $("#userLoginModal").modal("hide");
+            }
+        });
+    </script>
+    }
