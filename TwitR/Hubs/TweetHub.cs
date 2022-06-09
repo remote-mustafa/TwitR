@@ -10,73 +10,63 @@ namespace TwitR.Hubs
     public class TweetHub : Hub
     {
         public static List<Tweet> TweetList { get; set; } = new List<Tweet>();
-        public static List<User> LoginUsers { get; set; } = new List<User>();
+        public static List<User> LoginUsers = new List<User>();
 
         private static Dictionary<string, List<string>> _connections =
             new Dictionary<string, List<string>>();
 
         public short TweetCharacterLimit { get; set; } = 140;
 
-        public override Task OnConnectedAsync()
+
+        public async Task AddToConnection(string userName)
         {
-            //string name = Context.User.Identity.Name;
-            //List<string> connections;
-            //if(!_connections.TryGetValue(name,out connections))
-            //{
-            //    connections = new List<string>();
-            //    connections.Add(Context.ConnectionId);
-            //    _connections.Add(name, connections);
-            //}
-            return base.OnConnectedAsync();
+            List<string> connectionIds;
+            if (GetConnectionsByUserName(userName) == null)
+            {
+                connectionIds = new List<string>();
+                connectionIds.Add(Context.ConnectionId);
+                _connections.Add(userName, connectionIds);
+            }
+            else
+            {
+                connectionIds = GetConnectionsByUserName(userName).ToList();
+                connectionIds.Add(Context.ConnectionId);
+            }
         }
 
-        public IEnumerable<string> GetConnections(string key)
+        public IEnumerable<string> GetConnectionsByUserName(string key)
         {
-            List<string> connections;
-            if (_connections.TryGetValue(key, out connections))
+            List<string> connectionIds;
+
+            if (_connections.TryGetValue(key,out connectionIds))
             {
-                return connections;
+                return connectionIds;
             }
             return null;
         }
 
-        public async Task GetUserName()
+        public User CurrentUserByUserName(string userName)
         {
-            string userName = "sss";
-            await Clients.Caller.SendAsync("MyUserName", userName);
+            return null;
         }
 
-        public async Task GetConnectionId()
+        public void AddLoginUser(User user)
         {
-            string connectionId = Context.ConnectionId;
-            await Clients.Caller.SendAsync("TakeConnectionId", connectionId);
+            LoginUsers.Add(user);
         }
 
-        public async Task SendTweet(string tweetText, string connectionId)
+        public async Task SendTweet(string tweetText,string userName)
         {
-            string deger = Context.User.Identity.Name;
             if (tweetText.Length <= TweetCharacterLimit)
             {
                 Tweet receivedTweet = new Tweet();
                 receivedTweet.TweetText = tweetText;
-                receivedTweet.User.ConnectionId = connectionId;
+                receivedTweet.User = LoginUsers.Where(x => x.UserName == userName).FirstOrDefault();
 
                 TweetList.Add(receivedTweet);
 
                 await Clients.All.SendAsync("ReceiveTweet", receivedTweet);
             }
         }
-
-        public async Task GetCurrentUser(string connectionId)
-        {
-            if (LoginUsers.Count > 0)
-            {
-                User currentUser = LoginUsers.Where(x => x.ConnectionId == connectionId).FirstOrDefault();
-
-                await Clients.Caller.SendAsync("UserInfos", currentUser);
-            }
-
-        }
-
     }
 }

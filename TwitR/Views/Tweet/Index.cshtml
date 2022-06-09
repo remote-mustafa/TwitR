@@ -4,16 +4,8 @@
     ViewData["Title"] = "Anasayfa";
 }
 
-<div class="float-right">
-    @if (Model.LoginUser != null)
-    {
-        <span>@Model.LoginUser.UserName</span>
-        <input />
-    }
-    else
-    {
-        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#userLoginModal">Giriş Yap</button>
-    }
+<div class="float-right" id="btnGirisYap">
+    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#userLoginModal">Giriş Yap</button>
 </div>
 
 <br>
@@ -64,31 +56,41 @@
     </div>
 </div>
 
-<form asp-action="Login" data-ajax-method="POST" data-ajax="true" data-ajax-update="userLogin" data-ajax-complete="OnComplete">
-    <div class="modal fade" tabindex="-1" role="dialog" id="userLoginModal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Giriş Yap</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+<div class="modal fade" tabindex="-1" role="dialog" id="userLoginModal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Giriş Yap</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="inputUserName" placeholder="Kullanıcı Adı" />
                 </div>
-                <div class="modal-body" id="userLogin">
-                    <partial name="~/Views/Shared/_UserLoginPartial.cshtml" model="@Model" />
+                <div class="form-group">
+                    <input type="text" class="form-control" id="inputFirstName" placeholder="Adınız" />
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Giriş Yap</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
+                <div class="form-group">
+                    <input type="text" class="form-control" id="inputLastName" placeholder="Soyadınız" />
                 </div>
+                <div class="form-group">
+                    <input type="number" class="form-control" id="inputAge" placeholder="Yaşınız" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnLogin">Giriş Yap</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
             </div>
         </div>
     </div>
-</form>
+</div>
 
 @section Scripts{
     <script>
         $(document).ready(function() {
+            var user = null;
             var connection = new signalR.HubConnectionBuilder().withUrl("/TweetHub").build();
 
             $("#btnTweetSend").prop('disabled', true);
@@ -104,31 +106,48 @@
                 console.log("receivedTweet" + receivedTweet);
                 let html = '';
                 html = `<div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label class="tweet-label border">${receivedTweet.TweetText}</label>
-                                                </div>
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="tweet-label border">${receivedTweet.TweetText}</label>
                                             </div>
-                                        </div>`;
+                                        </div>
+                                    </div>`;
 
                 $("#tweetList").append(html);
             });
 
-
-            connection.on("GetCurrentUser", function(currentUser) {
-                console.log(currentUser);
-            });
-
-            $("#tweetSend").click(function() {
-                let tweetText = $("#tweetSendText").val();
-                connection.invoke("SendTweet", tweetText, connectionId).catch(function(err) {
-                    return console.error(err.toString());
+            if (userName != null) {
+                $("#tweetSend").click(function() {
+                    let tweetText = $("#tweetSendText").val();
+                    connection.invoke("SendTweet", tweetText, userName).catch(function(err) {
+                        return console.error(err.toString());
+                    });
                 });
-            });
+            }
 
             function OnComplete() {
                 $("#userLoginModal").modal("hide");
             }
+
+            $("#btnLogin").click(function() {
+                let userName = $("#inputUserName").val();
+                let firstName = $("#inputFirstName").val();
+                let lastName = $("#inputLastName").val();
+                let age = $("#inputAge").val();
+
+                user = {
+                    'UserName': userName,
+                    'FirstName': firstName,
+                    'LastName': lastName,
+                    'Age': age
+                };
+
+                if (user != null) {
+                    connection.invoke("AddLoginUser", user);
+                }
+
+                $("#btnGirisYap").html(`<span>${userName}</span>`)
+            });
         });
     </script>
     }
