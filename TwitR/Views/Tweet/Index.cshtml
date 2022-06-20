@@ -5,42 +5,25 @@
 }
 
 <div class="row">
-        <div class="col-md-9">
-            @*Tweet Atma Butonu*@
-            <span class="text-warning d-block font-weight-bold" id="warnTweetSendBtn"></span><br />
-            <button type="button" id="btnTweetSend" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tweetSendModal">
-                Tweet At
-            </button>
+    <div class="col-md-9">
+        @*Tweet Atma Butonu*@
+        <span class="text-warning d-block font-weight-bold" id="warnTweetSendBtn"></span><br />
+        <button type="button" id="btnTweetSend" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tweetSendModal">
+            Tweet At
+        </button>
+    </div>
+    <div class="col-md-3">
+        @*Giriş Yap Butonu*@
+        <div class="text-right btn-lg" id="loginIfo">
+            <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#userLoginModal">Giriş Yap</button>
         </div>
-        <div class="col-md-3">
-            @*Giriş Yap Butonu*@
-            <div class="text-right btn-lg" id="loginIfo">
-                <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#userLoginModal">Giriş Yap</button>
-            </div>
-        </div>
+    </div>
 </div>
 
 <br>
 
 @*Atılan Tweetler*@
 <div id="tweetList">
-
-    @if (Model != null)
-    {
-        @foreach (var item in Model)
-        {
-            <div class="card border-primary mb-3 w-100">
-                <div class="card-header">
-                    <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="@item.User.UserName">
-                        @item.User.UserName
-                    </a>
-                </div>
-                <div class="card-body text-primary" style="height:75px;">
-                    <p class="card-text">@item.TweetText</p>
-                </div>
-            </div>
-        }
-    }
 </div>
 
 @*BEGIN MODALS*@
@@ -164,10 +147,11 @@
             $("#btnTweetSend").prop('disabled', true);
             $("#btnLogin").prop('disabled', true);
 
-            connection.start().catch(function(err) {
+            connection.start().then(() => {
+                loadTweetList();
+            }).catch(function(err) {
                 console.error(err.toString());
             });
-
 
             $('#tweetSendModal').on('shown.bs.modal', function() {
                 let charachterLimit;
@@ -200,7 +184,7 @@
                 $("#tweetSendModal").modal("hide");
                 let tweetText = $("#tweetSendText").val();
                 connection.invoke("SendTweet", tweetText, userName).then(function() {
-
+                    $("#tweetSendText").text();
                 }).catch(function(err) {
                     return console.error(err.toString());
                 });
@@ -209,13 +193,14 @@
             connection.on("ReceiveTweet", function(receivedTweet) {
                 var html = '';
                 html += `<div class="card border-primary mb-3 w-100">
-                                                            <div class="card-header">
-                                                                <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${receivedTweet.user.userName}">${receivedTweet.user.userName}</a>
-                                                            </div>
-                                                            <div class="card-body text-primary" style="height:75px;">
-                                                                <p class="card-text w-100">${receivedTweet.tweetText}</p>
-                                                            </div>
-                                                        </div>`;
+                                                    <div class="card-header">
+                                                        <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${receivedTweet.user.userName}"> ${receivedTweet.user.userName}
+                                                        </a>
+                                                    </div>
+                                                    <div class="card-body text-primary" style="height:75px;">
+                                                        <p class="card-text w-100">${receivedTweet.tweetText}</p>
+                                                    </div>
+                                                </div>`;
 
                 $("#tweetList").prepend(html);
             });
@@ -279,6 +264,30 @@
                     console.log(err);
                 });
             })
+
+            function loadTweetList() {
+
+                connection.invoke("GetTweetList");
+
+                connection.on("ReceieveAllTweets", function(tweetList) {
+                    tweetList.forEach(function(item, index) {
+                        let htmlAll = '';
+                        htmlAll += `<div class="card border-primary mb-3 w-100">
+                                                            <div class="card-header">
+                                                                <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
+                                                                    ${item.user.userName}
+                                                                </a>
+                                                            </div>
+                                                            <div class="card-body text-primary" style="height:75px;">
+                                                                <p class="card-text w-100">${item.tweetText}</p>
+                                                            </div>
+                                                        </div>`;
+
+                        $("#tweetList").prepend(htmlAll);
+
+                    });
+                });
+            }
         });
 
         function loginUserNameChange(username) {
@@ -297,6 +306,9 @@
                 loginUserNameChange($("#inputUserName").val())
             });
         });
+
+
+
 
     </script>
     }

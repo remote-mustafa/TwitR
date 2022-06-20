@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TwitR.Controllers;
 using TwitR.Models;
+using TwitR.RabbitMQ;
 
 namespace TwitR.Hubs
 {
@@ -72,6 +73,9 @@ namespace TwitR.Hubs
                 receivedTweet.TweetText = tweetText;
                 receivedTweet.User = LoginUsers.Where(x => x.UserName == userName).FirstOrDefault();
 
+                Handler rabbitHandler = new Handler();
+                rabbitHandler.SendTwit(receivedTweet);
+
                 TweetList.Add(receivedTweet);
               
                 await Clients.All.SendAsync("ReceiveTweet", receivedTweet);
@@ -82,6 +86,15 @@ namespace TwitR.Hubs
         {
             short limit = TweetCharacterLimit;
             await Clients.Caller.SendAsync("RecievedCharacterLimit", limit);
+        }
+
+        public async Task GetTweetList()
+        {
+            var tweetList = TweetList;
+            if (TweetList.Count > 0)
+            {
+                await Clients.All.SendAsync("ReceieveAllTweets", tweetList);
+            }
         }
     }
 }
