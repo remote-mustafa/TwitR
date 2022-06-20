@@ -8,7 +8,7 @@ namespace TwitR.RabbitMQ
 {
     public class Handler : ITwitRCommand
     {
-        public void SendTwit(Tweet tweet)
+        public Tweet SendTwit(Tweet tweet)
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
@@ -34,6 +34,7 @@ namespace TwitR.RabbitMQ
                     var queueMessageBody = Encoding.UTF8.GetBytes(serializeTweetJson);
 
                     channel.BasicPublish("fanout-queue", "", null, queueMessageBody);
+                    return sendTweet;
                 }
             }
         }

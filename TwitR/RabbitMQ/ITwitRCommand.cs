@@ -4,6 +4,6 @@ namespace TwitR.RabbitMQ
 {
     public interface ITwitRCommand
     {
-        void SendTwit(Tweet tweet);
+        Tweet SendTwit(Tweet tweet);
     }
 }

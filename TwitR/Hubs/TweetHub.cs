@@ -74,9 +74,9 @@ namespace TwitR.Hubs
                 receivedTweet.User = LoginUsers.Where(x => x.UserName == userName).FirstOrDefault();
 
                 Handler rabbitHandler = new Handler();
-                rabbitHandler.SendTwit(receivedTweet);
+                Tweet modifiedTweet = rabbitHandler.SendTwit(receivedTweet);
 
-                TweetList.Add(receivedTweet);
+                TweetList.Add(modifiedTweet);
               
                 await Clients.All.SendAsync("ReceiveTweet", receivedTweet);
             }
