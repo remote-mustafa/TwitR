@@ -19,7 +19,6 @@ namespace TwitR.Hubs
 
         public short TweetCharacterLimit { get; set; } = 150;
 
-
         public Task AddToConnection(string userName)
         {
             List<string> connectionIds;
@@ -58,27 +57,19 @@ namespace TwitR.Hubs
             }
         }
 
-        public void AddLoginUser(User user)
+        public void AddLoginUserList(User user)
         {
             User newUser = new User();
             newUser = user;
             LoginUsers.Add(newUser);
         }
 
-        public async Task SendTweet(string tweetText,string userName)
+        public async Task SendTweet(Tweet tweet)
         {
-            if (tweetText.Length <= TweetCharacterLimit)
+            if (tweet.TweetText.Length <= TweetCharacterLimit)
             {
-                Tweet receivedTweet = new Tweet();
-                receivedTweet.TweetText = tweetText;
-                receivedTweet.User = LoginUsers.Where(x => x.UserName == userName).FirstOrDefault();
-
-                Handler rabbitHandler = new Handler();
-                Tweet modifiedTweet = rabbitHandler.SendTwit(receivedTweet);
-
-                TweetList.Add(modifiedTweet);
-              
-                await Clients.All.SendAsync("ReceiveTweet", receivedTweet);
+                TweetList.Add(tweet); ;
+                await Clients.All.SendAsync("ReceiveTweet", tweet);
             }
         }
 

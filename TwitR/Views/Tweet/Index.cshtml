@@ -140,17 +140,44 @@
 
 @section Scripts{
     <script>
+        function loadTweetList(connection) {
+            connection.invoke("GetTweetList");
+            connection.on("ReceieveAllTweets", function(tweetList) {
+                console.log(tweetList);
+                tweetList.forEach(function(item, index) {
+                    let htmlAllTweets = '';
+                    htmlAllTweets += `<div class="card border-primary mb-3 w-100">
+                                                                                    <div class="card-header">
+                                                                                        <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
+                                                                                            ${item.user.userName}
+                                                                                        </a>
+                                                                                    </div>
+                                                                                    <div class="card-body text-primary" style="height:75px;">
+                                                                                        <p class="card-text w-100">${item.tweetText}</p>
+                                                                                    </div>
+                                                                                </div>`;
+
+                    $("#tweetList").prepend(htmlAllTweets);
+                });
+            });
+        }
+        // BEGIN "document.ready"
         $(document).ready(function() {
-            var userName = null;
+
+            let userName = null;
+            let user = null;
             var connection = new signalR.HubConnectionBuilder().withHubProtocol(new signalR.JsonHubProtocol()).withUrl("/TweetHub").build();
 
+            // Başlangıçtaki Buton Durumları
             $("#btnTweetSend").prop('disabled', true);
             $("#btnLogin").prop('disabled', true);
 
+            // Bağlantıyı başlatma
             connection.start().then(() => {
-                loadTweetList();
+                console.log("bağlandı: " + Date.now());
+                loadTweetList(connection);
             }).catch(function(err) {
-                console.error(err.toString());
+                console.error(err);
             });
 
             $('#tweetSendModal').on('shown.bs.modal', function() {
@@ -163,6 +190,7 @@
 
                 $('#tweetSendText').on("input", function() {
                     let tweetTextLength = $("#tweetSendText").val().length;
+
                     $("#tweetWarn").text(`Karakter Sayısı Hakkı: ${charachterLimit - tweetTextLength}`);
 
                     if (tweetTextLength <= 0) {
@@ -179,44 +207,48 @@
                 });
             })
 
-
+            // Tweet Gönderme
             $("#tweetSend").click(function() {
-                $("#tweetSendModal").modal("hide");
+
                 let tweetText = $("#tweetSendText").val();
-                connection.invoke("SendTweet", tweetText, userName).then(function() {
-                    $("#tweetSendText").text();
-                }).catch(function(err) {
-                    return console.error(err.toString());
-                });
+                let tweet = {
+                    "tweetText": tweetText,
+                    "user": user
+                };
+
+                let model = JSON.stringify(tweet);
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Tweet/Index",
+                    data: {
+                        'model': model
+                    },
+                    success: function(res) {
+                        if (res.isSuccessful) {
+                            console.log("mesaj gönderildi");
+                            htmlTweetCreate();
+                        }
+                    }
+                })
+                $("#tweetSendModal").modal("hide");
+                $("#tweetSendText").val('');
             });
 
-            connection.on("ReceiveTweet", function(receivedTweet) {
-                var html = '';
-                html += `<div class="card border-primary mb-3 w-100">
-                                                    <div class="card-header">
-                                                        <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${receivedTweet.user.userName}"> ${receivedTweet.user.userName}
-                                                        </a>
-                                                    </div>
-                                                    <div class="card-body text-primary" style="height:75px;">
-                                                        <p class="card-text w-100">${receivedTweet.tweetText}</p>
-                                                    </div>
-                                                </div>`;
-
-                $("#tweetList").prepend(html);
-            });
-
+            // Tweet Gönderme Butonu Aktifliği
             if (userName == null) {
                 $("#btnTweetSend").prop('disabled', true);
                 $("#warnTweetSendBtn").text("Tweet atabilmek için giriş yapınız");
             }
 
+            // Kullanıcı Giriş Click İşlemi
             $("#btnLogin").click(function() {
                 userName = $("#inputUserName").val();
                 let firstName = $("#inputFirstName").val();
                 let lastName = $("#inputLastName").val();
                 let age = $("#inputAge").val();
 
-                let user = {
+                user = {
                     'UserName': userName,
                     'FirstName': firstName,
                     'LastName': lastName,
@@ -224,7 +256,7 @@
                 };
 
                 if (user != null) {
-                    connection.invoke("AddLoginUser", user).then(function() {
+                    connection.invoke("AddLoginUserList", user).then(function() {
                         $("#btnTweetSend").prop('disabled', false);
                         $("#warnTweetSendBtn").removeClass("d-block").addClass("d-none");
                     });
@@ -234,9 +266,24 @@
                 $("#loginIfo").html(`<span class="h4">${userName}</span>`);
             });
 
+            // Kullanıcı Giriş Modal'ında UserName Girerken
+            $('#userLoginModal').on('shown.bs.modal', function() {
+                $('#inputUserName').on("input", function() {
+                    loginUserNameChange($("#inputUserName").val())
+                });
+            });
 
+            // Kullanıcı Detay Göster Click'i
+            $(".btnUserDetails").click(function() {
+                let userName = $(this).data('id');
+                connection.invoke("UserDetailByUserName", userName).catch((err) => {
+                    console.log(err);
+                });
+            });
+
+            // Kullanıcı Detayı Görüntüleme Modal'ı
             $(document).on("click", ".btnUserDetails", function() {
-                var userNameValue = $(this).data('id');
+                let userNameValue = $(this).data('id');
                 console.log(userNameValue);
                 connection.invoke("UserDetailByUserName", userNameValue).catch((err) => {
                     console.log(err);
@@ -256,58 +303,37 @@
                 });
             });
 
+            //BEGIN FUCTINONS
+            function loginUserNameChange(username) {
+                if (username.length < 3) {
+                    $("#btnLogin").prop('disabled', true);
+                    $("#userNameLengthWarn").text("Kullanıcı adınız en az 3 karakter olmalıdır");
+                }
+                else {
+                    $("#btnLogin").prop('disabled', false);
+                    $("#userNameLengthWarn").text('');
+                }
+            }
 
-            $(".btnUserDetails").click(function() {
-                var userName = $(this).data('id');
+            function htmlTweetCreate() {
+                connection.on("ReceiveTweet", function(tweet) {
+                    let html = '';
+                    html += `<div class="card border-primary mb-3 w-100">
+                                <div class="card-header">
+                                    <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${tweet.user.userName}">                                                ${tweet.user.userName}
+                                    </a>
+                                </div>
+                                <div class="card-body text-primary" style="height:75px;">
+                                    <p class="card-text w-100">${tweet.tweetText}</p>
+                                </div>
+                            </div>`;
 
-                connection.invoke("UserDetailByUserName", userName).catch((err) => {
-                    console.log(err);
-                });
-            })
-
-            function loadTweetList() {
-
-                connection.invoke("GetTweetList");
-
-                connection.on("ReceieveAllTweets", function(tweetList) {
-                    tweetList.forEach(function(item, index) {
-                        let htmlAll = '';
-                        htmlAll += `<div class="card border-primary mb-3 w-100">
-                                                            <div class="card-header">
-                                                                <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
-                                                                    ${item.user.userName}
-                                                                </a>
-                                                            </div>
-                                                            <div class="card-body text-primary" style="height:75px;">
-                                                                <p class="card-text w-100">${item.tweetText}</p>
-                                                            </div>
-                                                        </div>`;
-
-                        $("#tweetList").prepend(htmlAll);
-
-                    });
+                    $("#tweetList").prepend(html);
                 });
             }
+            //END FUCTINONS
         });
-
-        function loginUserNameChange(username) {
-            if (username.length < 3) {
-                $("#btnLogin").prop('disabled', true);
-                $("#userNameLengthWarn").text("Kullanıcı adınız en az 3 karakter olmalıdır");
-            }
-            else {
-                $("#btnLogin").prop('disabled', false);
-                $("#userNameLengthWarn").text('');
-            }
-        }
-
-        $('#userLoginModal').on('shown.bs.modal', function() {
-            $('#inputUserName').on("input", function() {
-                loginUserNameChange($("#inputUserName").val())
-            });
-        });
-
-
+       //END "document.ready"
 
 
     </script>

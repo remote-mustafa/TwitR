@@ -1,14 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System;
 using System.Text;
+using System.Threading.Tasks;
 using TwitR.Models;
 
 namespace TwitR.RabbitMQ
 {
     public class Handler : ITwitRCommand
     {
-        public Tweet SendTwit(Tweet tweet)
+        static HubConnection connectionSignalR;
+        public bool SendTwitToQueue(Tweet tweet)
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
@@ -17,10 +21,9 @@ namespace TwitR.RabbitMQ
                 {
 
                     channel.ExchangeDeclare("fanout-queue", ExchangeType.Fanout, true);
-                    var queueName = channel.QueueDeclare().QueueName;
-                    channel.QueueDeclare(queueName, true, false, true);
+                    channel.QueueDeclare("twit", true, false, true);
 
-                    channel.QueueBind(queueName, "fanout-queue", "");
+                    channel.QueueBind("twit", "fanout-queue", "");
 
                     string modifiedTweetText = $"{tweet.TweetText} RabbitMQ ile gönderildi";
 
@@ -33,34 +36,38 @@ namespace TwitR.RabbitMQ
                     var serializeTweetJson = JsonConvert.SerializeObject(sendTweet);
                     var queueMessageBody = Encoding.UTF8.GetBytes(serializeTweetJson);
 
+                    //channel.BasicPublish("fanout-queue", "", null, queueMessageBody);
                     channel.BasicPublish("fanout-queue", "", null, queueMessageBody);
-                    return sendTweet;
+
+                    return true;
                 }
             }
         }
 
-        public void GetTwit()
+        public void GetTwitFormQueue()
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
-            using (var connection = factory.CreateConnection())
+            var connection = factory.CreateConnection();
+            var channel = connection.CreateModel();
+
+            ConnetWithSignalR().Wait();
+            channel.QueueBind("twit", "fanout-queue", "", null);
+
+            var consumer = new EventingBasicConsumer(channel);
+            channel.BasicQos(0, 1, false);
+            channel.BasicConsume("twit", false, consumer);
+
+            consumer.Received += (model, ea) =>
             {
-                using (var channel = connection.CreateModel())
-                {
-                    channel.ExchangeDeclare("fanout-queue", ExchangeType.Fanout, true);
-                    var queueName = channel.QueueDeclare().QueueName;
-                    channel.QueueBind(queueName, "fanout-queue", "");
-                    
-                    var consumer = new EventingBasicConsumer(channel);
-
-                    consumer.Received += (object sender, BasicDeliverEventArgs e) =>
-                    {
-                        var tweet = Encoding.UTF8.GetString(e.Body.ToArray());
-                        var deserializeTweetJson = JsonConvert.DeserializeObject<Tweet>(tweet);
-                    };
-
-                    channel.BasicConsume(queueName, true, consumer);
-                }
-            }
+                var tweetString = Encoding.UTF8.GetString(ea.Body.ToArray());
+                var tweet = JsonConvert.DeserializeObject<Tweet>(tweetString);
+                connectionSignalR.InvokeAsync("SendTweet", tweet);
+            };
+        }
+        public static async Task ConnetWithSignalR()
+        {
+            connectionSignalR = new HubConnectionBuilder().WithUrl("https://localhost:44366/TweetHub").Build();
+            await connectionSignalR.StartAsync();
         }
     }
 }
