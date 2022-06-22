@@ -5,7 +5,7 @@ using RabbitMQ.Client.Events;
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using TwitR.Models;
+using TwitR.Models.Concrete;
 
 namespace TwitR.RabbitMQ
 {

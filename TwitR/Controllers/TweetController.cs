@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using TwitR.Models;
+using TwitR.Models.Concrete;
 using TwitR.RabbitMQ;
 
 namespace TwitR.Controllers

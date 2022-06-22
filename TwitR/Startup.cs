@@ -9,6 +9,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitR.Hubs;
+using TwitR.Models.Concrete;
+using TwitR.Repositories.Abstract;
+using TwitR.Repositories.Concrete.Dapper;
+using TwitR.Repositories.Concrete.Dapper.Context;
 
 namespace TwitR
 {
@@ -26,6 +30,8 @@ namespace TwitR
         {
             services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddSignalR().AddNewtonsoftJsonProtocol();
+            services.AddSingleton<DapperContext>();
+            services.AddScoped<IEntityRepository<User>, UserRepository>();
             services.AddSingleton<TweetHub>();
         }
 
@@ -52,6 +58,10 @@ namespace TwitR
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<TweetHub>("/TweetHub");
+
+                endpoints.MapControllerRoute(
+                    name:"api",
+                    pattern: "api/{controller=Tweets}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute(
                     name: "default",

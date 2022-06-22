@@ -1,6 +1,4 @@
-﻿@model IEnumerable<TwitR.Models.Tweet>
-
-@{
+﻿@{
     ViewData["Title"] = "Anasayfa";
 }
 
@@ -148,15 +146,15 @@
                 tweetList.forEach(function(item, index) {
                     let htmlAllTweets = '';
                     htmlAllTweets += `<div class="card border-primary mb-3 w-100">
-                                    <div class="card-header">
-                                        <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
-                                            ${item.user.userName}
-                                        </a>
-                                    </div>
-                                    <div class="card-body text-primary" style="height:75px;">
-                                        <p class="card-text w-100">${item.tweetText}</p>
-                                    </div>
-                                </div>`;
+                                            <div class="card-header">
+                                                <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
+                                                    ${item.user.userName}
+                                                </a>
+                                            </div>
+                                            <div class="card-body text-primary" style="height:75px;">
+                                                <p class="card-text w-100">${item.tweetText}</p>
+                                            </div>
+                                        </div>`;
 
                     $("#tweetList").prepend(htmlAllTweets);
                 });
@@ -250,17 +248,37 @@
                 let age = $("#inputAge").val();
 
                 user = {
-                    'UserName': userName,
-                    'FirstName': firstName,
-                    'LastName': lastName,
-                    'Age': age
+                    'UserName': userName.toString(),
+                    'FirstName': firstName.toString(),
+                    'LastName': lastName.toString(),
+                    'Age': age.toString()
                 };
 
+                console.log(user);
+                let model = JSON.stringify(user);
+                console.log(model);
+
                 if (user != null) {
-                    connection.invoke("AddLoginUserList", user).then(function() {
-                        $("#btnTweetSend").prop('disabled', false);
-                        $("#warnTweetSendBtn").removeClass("d-block").addClass("d-none");
+
+                    $.ajax({
+                        type: "POST",
+                        url: '/api/Tweets/AddUser',
+                        data: {
+                            'model': model
+                        },
+                        success: function() {
+                            console.log("kullanıcı eklendi");
+                            $("#btnTweetSend").prop('disabled', false);
+                            $("#warnTweetSendBtn").removeClass("d-block").addClass("d-none");
+                        },
+                        error: function(err) {
+                            console.log(err);
+                        }
                     });
+
+                    //connection.invoke("AddLoginUserList", user).then(function() {
+
+                    //});
                 }
 
                 $("#userLoginModal").modal("hide");
@@ -317,24 +335,25 @@
             }
 
             function htmlTweetCreate() {
+                let randomTweetId = Math.round(Math.random() * 10000);
                 connection.on("ReceiveTweet", function(tweet) {
                     let html = '';
                     html += `<div class="card border-primary mb-3 w-100" id="${randomTweetId}">
-                                <div class="card-header">
-                                    <div class="main-item" style="width:100%;">
-                                        <div class="animated-background" style="width:200px;">
-                                            <div class="background-masker"></div>
+                                        <div class="card-header">
+                                            <div class="main-item" style="width:100%;">
+                                                <div class="animated-background" style="width:200px;">
+                                                    <div class="background-masker"></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="card-body text-primary" style="height:75px;">
-                                    <div class="main-item" style="width:100%;">
-                                        <div class="animated-background">
-                                                <div class="background-masker" style="width:100%></div>
+                                        <div class="card-body text-primary" style="height:75px;">
+                                            <div class="main-item" style="width:100%;">
+                                                <div class="animated-background">
+                                                        <div class="background-masker" style="width:100%></div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>`;
+                                    </div>`;
 
                     $("#tweetList").prepend(html);
 
@@ -345,21 +364,24 @@
 
             function replaceTweet(data, tweetId) {
                 let newHtml = '';
+                console.log(data);
+                console.log(data.user.userName);
                 newHtml += `<div class="card border-primary mb-3 w-100">
-                                <div class="card-header">
-                                    <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${data.user.userName}" ${data.user.userName}
-                                    </a>
-                                </div>
-                                <div class="card-body text-primary" style="height:75px;">
-                                    <p class="card-text w-100">${data.tweetText}</p>
-                                </div>
-                            </div>`;
+                                        <div class="card-header">
+                                            <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${data.user.userName}">
+                                            ${data.user.userName}
+                                            </a>
+                                        </div>
+                                        <div class="card-body text-primary" style="height:75px;">
+                                            <p class="card-text w-100">${data.tweetText}</p>
+                                        </div>
+                                    </div>`;
 
                 let tweetIdString = `#${tweetId}`;
                 $(tweetIdString).replaceWith(newHtml);
             }
             //END FUCTINONS
         });
-        //END "document.ready"
+                //END "document.ready"
     </script>
     }

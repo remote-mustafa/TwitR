@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitR.Controllers;
-using TwitR.Models;
+using TwitR.Models.Concrete;
 using TwitR.RabbitMQ;
 
 namespace TwitR.Hubs
@@ -68,7 +68,7 @@ namespace TwitR.Hubs
         {
             if (tweet.TweetText.Length <= TweetCharacterLimit)
             {
-                TweetList.Add(tweet); ;
+                TweetList.Add(tweet);
                 await Clients.All.SendAsync("ReceiveTweet", tweet);
             }
         }
