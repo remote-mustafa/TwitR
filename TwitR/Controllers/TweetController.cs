@@ -21,7 +21,9 @@ namespace TwitR.Controllers
         public JsonResult Index(string model)
         {
             var tweet = JsonConvert.DeserializeObject<Tweet>(model);
+
             Handler rabbitHandler = new Handler();
+
             bool result = rabbitHandler.SendTwitToQueue(tweet);
 
             if (result)
@@ -29,7 +31,7 @@ namespace TwitR.Controllers
                 rabbitHandler.GetTwitFormQueue();
             }
 
-            return Json(new { isSuccessful = true });
+            return Json(new { isSuccessful = true});
         }
     }
 }

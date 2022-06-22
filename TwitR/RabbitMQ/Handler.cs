@@ -25,7 +25,7 @@ namespace TwitR.RabbitMQ
 
                     channel.QueueBind("twit", "fanout-queue", "");
 
-                    string modifiedTweetText = $"{tweet.TweetText} RabbitMQ ile gönderildi";
+                    string modifiedTweetText = $"{tweet.TweetText} --RabbitMQ ile gönderildi";
 
                     Tweet sendTweet = new Tweet()
                     {
@@ -36,7 +36,6 @@ namespace TwitR.RabbitMQ
                     var serializeTweetJson = JsonConvert.SerializeObject(sendTweet);
                     var queueMessageBody = Encoding.UTF8.GetBytes(serializeTweetJson);
 
-                    //channel.BasicPublish("fanout-queue", "", null, queueMessageBody);
                     channel.BasicPublish("fanout-queue", "", null, queueMessageBody);
 
                     return true;
