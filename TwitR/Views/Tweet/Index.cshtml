@@ -3,17 +3,27 @@
 }
 
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-8">
         @*Tweet Atma Butonu*@
         <span class="text-warning d-block font-weight-bold" id="warnTweetSendBtn"></span><br />
-        <button type="button" id="btnTweetSend" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#tweetSendModal">
-            Tweet At
+        <button type="button" id="btnModalTweetSend" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#modalTweetSend">
+            Tweet Gönder
         </button>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
+        @*Mesaj Gönder Butonu*@
+        <div class="text-right">
+            <button type="button" id="btnModalMessageSend" class="btn btn-success btn-lg" data-toggle="modal" data-target="#modalMessageSend">
+                Mesaj Gönder
+            </button>
+        </div>
+    </div>
+    <div class="col-md-2">
         @*Giriş Yap Butonu*@
-        <div class="text-right btn-lg" id="loginIfo">
-            <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#userLoginModal">Giriş Yap</button>
+        <div class="text-right" id="userInfo">
+            <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#modalUserLogin">
+                Giriş Yap
+            </button>
         </div>
     </div>
 </div>
@@ -21,12 +31,21 @@
 <br>
 
 @*Atılan Tweetler*@
-<div id="tweetList">
+<div class="row">
+        <div class="col-md-8">
+            <div id="tweetList">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <ul class="list-group" id="messageList">
+            </ul>
+        </div>
 </div>
+
 
 @*BEGIN MODALS*@
 @*Tweet Atma Modal*@
-<div class="modal fade" tabindex="-1" role="dialog" id="tweetSendModal">
+<div class="modal fade" tabindex="-1" role="dialog" id="modalTweetSend">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -37,12 +56,12 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <textarea class="form-control" id="tweetSendText" rows="4"></textarea>
-                    <span class="float-right" id="tweetWarn"></span>
+                    <textarea class="form-control" id="inputTweetText" rows="4"></textarea>
+                    <span class="float-right" id="tweetCharachterLimitWarn"></span>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="tweetSend">Gönder</button>
+                <button type="button" class="btn btn-primary" id="btnTweetSend">Gönder</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
             </div>
         </div>
@@ -50,7 +69,7 @@
 </div>
 
 @*Login Modal*@
-<div class="modal fade" tabindex="-1" role="dialog" id="userLoginModal">
+<div class="modal fade" tabindex="-1" role="dialog" id="modalUserLogin">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -75,7 +94,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="btnLogin">Giriş Yap</button>
+                <button type="button" class="btn btn-primary" id="btnUserLogin">Giriş Yap</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
             </div>
         </div>
@@ -136,6 +155,34 @@
     </div>
 </div>
 
+@*Mesaj Gönder Modal*@
+<div class="modal fade" tabindex="-1" role="dialog" id="modalMessageSend">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mesaj Gönder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <select class="form-control" id="userList">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <textarea class="form-control" id="messageSendText" rows="4"></textarea>
+                    <span class="float-right" id="tweetCharachterLimitWarn"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnMessageSend">Gönder</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Vazgeç</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts{
     <script>
 
@@ -146,15 +193,15 @@
                 tweetList.forEach(function(item, index) {
                     let htmlAllTweets = '';
                     htmlAllTweets += `<div class="card border-primary mb-3 w-100">
-                                            <div class="card-header">
-                                                <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
-                                                    ${item.user.userName}
-                                                </a>
-                                            </div>
-                                            <div class="card-body text-primary" style="height:75px;">
-                                                <p class="card-text w-100">${item.tweetText}</p>
-                                            </div>
-                                        </div>`;
+                                                                                                                                                                                                                            <div class="card-header">
+                                                                                                                                                                                                                                <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${item.user.userName}">
+                                                                                                                                                                                                                                    ${item.user.userName}
+                                                                                                                                                                                                                                </a>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                            <div class="card-body text-primary" style="height:75px;">
+                                                                                                                                                                                                                                <p class="card-text w-100">${item.tweetText}</p>
+                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                        </div>`;
 
                     $("#tweetList").prepend(htmlAllTweets);
                 });
@@ -170,8 +217,8 @@
             var connection = new signalR.HubConnectionBuilder().withHubProtocol(new signalR.JsonHubProtocol()).withUrl("/TweetHub").build();
 
             // Başlangıçtaki Buton Durumları
-            $("#btnTweetSend").prop('disabled', true);
-            $("#btnLogin").prop('disabled', true);
+            $("#btnModalTweetSend").prop('disabled', true);
+            $("#btnUserLogin").prop('disabled', true);
 
             // Bağlantıyı başlatma
             connection.start().then(() => {
@@ -180,113 +227,163 @@
                 console.error(err);
             });
 
-            $('#tweetSendModal').on('shown.bs.modal', function() {
+
+            // Tweet Gönderme Modal'ı
+            $('#modalTweetSend').on('shown.bs.modal', function() {
+
                 let charachterLimit;
+
                 connection.invoke("GetTweetCharacterLimit");
 
                 connection.on("RecievedCharacterLimit", (limit) => {
                     charachterLimit = limit;
                 });
 
-                $('#tweetSendText').on("input", function() {
-                    let tweetTextLength = $("#tweetSendText").val().length;
+                $('#inputTweetText').on("input", function() {
 
-                    $("#tweetWarn").text(`Karakter Sayısı Hakkı: ${charachterLimit - tweetTextLength}`);
+                    let tweetTextLength = $("#inputTweetText").val().length;
+
+                    $("#tweetCharachterLimitWarn").text(`Kalan Karakter Sayısı: ${charachterLimit - tweetTextLength}`);
 
                     if (tweetTextLength <= 0) {
-                        $("#tweetSend").prop("disabled", true);
+                        $("#btnTweetSend").prop("disabled", true);
                     }
                     else if (tweetTextLength > charachterLimit) {
-                        $("#tweetWarn").removeClass("text-danger").addClass("text-danger");
-                        $("#tweetSend").prop("disabled", true);
+                        $("#tweetCharachterLimitWarn").removeClass("text-danger").addClass("text-danger");
+                        $("#btnTweetSend").prop("disabled", true);
                     }
                     else {
-                        $("#tweetWarn").removeClass("text-danger").addClass("text-success");
-                        $("#tweetSend").prop("disabled", false);
+                        $("#tweetCharachterLimitWarn").removeClass("text-danger").addClass("text-success");
+                        $("#btnTweetSend").prop("disabled", false);
                     }
                 });
-            })
+            });
+
+
+            // Mesaj Gönderme Modal'ı
+            $('#modalMessageSend').on('shown.bs.modal', function() {
+
+                $("#userList").html('');
+                $('#btnMessageSend').prop("disabled", true);
+                connection.invoke("GetUsers");
+
+                connection.on("GetUsers", (users) => {
+                    console.log(users);
+                    $.each(users, function(index, user) {
+                        $("#userList").append(`<option value="${user.id}">${user.userName}</option>`);
+                    });
+                });
+
+                $('#messageSendText').on("input", function() {
+
+                    if ($("#messageSendText").val().length <= 0) {
+                        $("#btnMessageSend").prop("disabled", true);
+                    }
+                    else {
+                        $("#btnMessageSend").prop("disabled", false);
+                    }
+                });
+
+                // Mesaj Gönderme Click'i
+                $("#btnMessageSend").click(function() {
+
+                    let messageSendText = $("#messageSendText").val();
+                    let toUserId = $("#userList option").val();
+
+                    let message = {
+                        "Text": messageSendText,
+                        "FromUserId": user.id,
+                        "ToUserId": toUserId
+                    };
+
+                    groupName = `${user.id}_${toUserId}`;
+                    connection.invoke("AddToMessageGroup", groupName,toUserId);
+
+                    connection.invoke("SendMessage", message, groupName).then(() => {
+                        $("#modalMessageSend").modal("hide");
+                    });
+                });
+            });
+
+            connection.on("ReceiveMessage", function(addedMessage) {
+                let sendMessageDate = Date.now();
+                let html = '';
+                html += `<li class="list-group-item">${addedMessage.text} -${sendMessageDate}</li>`;
+                $("#messageList").append(html);
+
+            });
+
 
             // Tweet Gönderme
-            $("#tweetSend").click(function() {
+            $("#btnTweetSend").click(function() {
 
-                let tweetText = $("#tweetSendText").val();
+                let tweetText = $("#inputTweetText").val();
                 let tweet = {
                     "tweetText": tweetText,
                     "user": user
                 };
 
-                let model = JSON.stringify(tweet);
-
                 $.ajax({
                     type: "POST",
                     url: "/Tweet/Index",
                     data: {
-                        'model': model
+                        'model': JSON.stringify(tweet)
                     },
                     success: function(res) {
                         if (res.isSuccessful) {
-                            htmlTweetCreate();
+                            htmlTweetCreateLoading();
                         }
                     }
                 })
-                $("#tweetSendModal").modal("hide");
-                $("#tweetSendText").val('');
+                $("#modalTweetSend").modal("hide");
+                $("#inputTweetText").val('');
             });
 
-            // Tweet Gönderme Butonu Aktifliği
+            // Tweet ve Mesaj Gönderme Butonu Aktifliği
             if (userName == null) {
-                $("#btnTweetSend").prop('disabled', true);
-                $("#warnTweetSendBtn").text("Tweet atabilmek için giriş yapınız");
+                $("#btnModalTweetSend").prop('disabled', true);
+                $("#btnModalMessageSend").prop('disabled', true);
+                $("#warnTweetSendBtn").text("Tweet gönderebilmek için giriş yapınız");
             }
 
             // Kullanıcı Giriş Click İşlemi
-            $("#btnLogin").click(function() {
+            $("#btnUserLogin").click(function() {
+
                 userName = $("#inputUserName").val();
                 let firstName = $("#inputFirstName").val();
                 let lastName = $("#inputLastName").val();
                 let age = $("#inputAge").val();
 
                 user = {
-                    'UserName': userName.toString(),
-                    'FirstName': firstName.toString(),
-                    'LastName': lastName.toString(),
-                    'Age': age.toString()
+                    "UserName": userName,
+                    "FirstName": firstName,
+                    "LastName": lastName,
+                    "Age": age
                 };
 
-                console.log(user);
-                let model = JSON.stringify(user);
-                console.log(model);
-
                 if (user != null) {
-
                     $.ajax({
                         type: "POST",
-                        url: '/api/Tweets/AddUser',
-                        data: {
-                            'model': model
-                        },
+                        url: "/api/Tweets/AddUser",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        data: JSON.stringify(user),
                         success: function() {
-                            console.log("kullanıcı eklendi");
-                            $("#btnTweetSend").prop('disabled', false);
+                            $("#btnModalTweetSend").prop('disabled', false);
+                            $('#btnModalMessageSend').prop("disabled", false);
                             $("#warnTweetSendBtn").removeClass("d-block").addClass("d-none");
+                            $("#modalUserLogin").modal("hide");
+                            $("#userInfo").html(`<span class="h4">${userName}</span>`);
                         },
                         error: function(err) {
                             console.log(err);
                         }
                     });
-
-                    //connection.invoke("AddLoginUserList", user).then(function() {
-
-                    //});
                 }
-
-                $("#userLoginModal").modal("hide");
-                $("#loginIfo").html(`<span class="h4">${userName}</span>`);
             });
 
             // Kullanıcı Giriş Modal'ında UserName Girerken
-            $('#userLoginModal').on('shown.bs.modal', function() {
+            $('#modalUserLogin').on('shown.bs.modal', function() {
                 $('#inputUserName').on("input", function() {
                     loginUserNameChange($("#inputUserName").val())
                 });
@@ -300,15 +397,25 @@
                 });
             });
 
+            // User DB'ye eklendikten sonra Id değerini alma
+            connection.on("AddUser", function(addedUser) {
+                user.id = addedUser.id;
+            });
+
+
             // Kullanıcı Detayı Görüntüleme Modal'ı
             $(document).on("click", ".btnUserDetails", function() {
+
                 let userNameValue = $(this).data('id');
+
                 connection.invoke("UserDetailByUserName", userNameValue).catch((err) => {
                     console.log(err);
                 });
 
                 connection.on("ReceiveUserDetail", function(user) {
+
                     $("#modalUserDetails #detailUserName").text(user.userName);
+
                     if (user.firstName != '') {
                         $("#modalUserDetails #detailFirstName").text(user.firstName);
                     }
@@ -321,67 +428,70 @@
                 });
             });
 
-            //BEGIN FUCTINONS
-
+            // BEGIN FUCTINONS
+            // User login modal'ında "UserName" değerini girerken uzunluk kontrolü
             function loginUserNameChange(username) {
                 if (username.length < 3) {
-                    $("#btnLogin").prop('disabled', true);
+                    $("#btnUserLogin").prop('disabled', true);
                     $("#userNameLengthWarn").text("Kullanıcı adınız en az 3 karakter olmalıdır");
                 }
                 else {
-                    $("#btnLogin").prop('disabled', false);
+                    $("#btnUserLogin").prop('disabled', false);
                     $("#userNameLengthWarn").text('');
                 }
             }
 
-            function htmlTweetCreate() {
+            // Tweet gönderildikten sonra component yüklenmesi
+            function htmlTweetCreateLoading() {
                 let randomTweetId = Math.round(Math.random() * 10000);
+
                 connection.on("ReceiveTweet", function(tweet) {
+
                     let html = '';
                     html += `<div class="card border-primary mb-3 w-100" id="${randomTweetId}">
-                                        <div class="card-header">
-                                            <div class="main-item" style="width:100%;">
-                                                <div class="animated-background" style="width:200px;">
-                                                    <div class="background-masker"></div>
+                                                <div class="card-header">
+                                                    <div class="main-item" style="width:100%;">
+                                                        <div class="animated-background" style="width:200px;">
+                                                            <div class="background-masker"></div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-body text-primary" style="height:75px;">
-                                            <div class="main-item" style="width:100%;">
-                                                <div class="animated-background">
-                                                        <div class="background-masker" style="width:100%></div>
+                                                <div class="card-body text-primary" style="height:75px;">
+                                                    <div class="main-item" style="width:100%;">
+                                                        <div class="animated-background">
+                                                                <div class="background-masker" style="width:100%></div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>`;
+                                            </div>`;
 
                     $("#tweetList").prepend(html);
 
-                    setTimeout(function() { replaceTweet(tweet, randomTweetId) }, 2500);
+                    setTimeout(function() { htmlTweetLoadingReplace(tweet, randomTweetId) }, 2500);
 
                 });
             }
 
-            function replaceTweet(data, tweetId) {
+            function htmlTweetLoadingReplace(data, tweetId) {
                 let newHtml = '';
-                console.log(data);
-                console.log(data.user.userName);
                 newHtml += `<div class="card border-primary mb-3 w-100">
-                                        <div class="card-header">
-                                            <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${data.user.userName}">
-                                            ${data.user.userName}
-                                            </a>
-                                        </div>
-                                        <div class="card-body text-primary" style="height:75px;">
-                                            <p class="card-text w-100">${data.tweetText}</p>
-                                        </div>
-                                    </div>`;
+                                                <div class="card-header">
+                                                    <a data-toggle="modal" href="#modalUserDetails" class="btnUserDetails" data-id="${data.user.userName}">
+                                                    ${data.user.userName}
+                                                    </a>
+                                                </div>
+                                                <div class="card-body text-primary" style="height:75px;">
+                                                    <p class="card-text w-100">${data.tweetText}</p>
+                                                </div>
+                                            </div>
+                                            </div>
+                                            </div>`;
 
-                let tweetIdString = `#${tweetId}`;
-                $(tweetIdString).replaceWith(newHtml);
+                //let tweetIdString = `#${tweetId}`;
+
+                $(`#${tweetId}`).replaceWith(newHtml);
             }
             //END FUCTINONS
-        });
-                //END "document.ready"
+        });                                                                                                                                                //END "document.ready"
     </script>
     }

@@ -1,5 +1,7 @@
 ﻿using Dapper;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using TwitR.Models.Concrete;
@@ -17,26 +19,24 @@ namespace TwitR.Repositories.Concrete.Dapper
             _context = context;
         }
 
-        public async Task AddAsync(User entity)
+        public async Task<User> AddAsync(User entity)
         {
-            /*
-             public string UserName { get; set;
-             public string FirstName { get; set
-             public string LastName { get; set;
-             public ushort? Age { get; set; }
-             */
-            string query = "INSERT INTO Users (UserName, FirstName, LastName,Age,CreatedDate) VALUES (@UserName, @FirstName, @LastName,@Age,@CreatedDate)";
+            string query = "INSERT INTO Users (UserName, FirstName, LastName,Age,CreatedDate) OUTPUT INSERTED.* VALUES (@UserName, @FirstName, @LastName,@Age,@CreatedDate)";
+
+            entity.CreatedDate = DateTime.Now;
+
             var parameters = new DynamicParameters();
-            parameters.Add("UserName", entity.UserName);
-            parameters.Add("FirstName", entity.FirstName);
-            parameters.Add("LastName", entity.LastName);
-            parameters.Add("Age", entity.Age);
-            parameters.Add("CreatedDate", entity.CreatedDate);
+            parameters.Add("UserName", entity.UserName, DbType.String);
+            parameters.Add("FirstName", entity.FirstName, DbType.String);
+            parameters.Add("LastName", entity.LastName, DbType.String);
+            parameters.Add("Age", entity.Age, DbType.Int32);
+            parameters.Add("CreatedDate", entity.CreatedDate, DbType.DateTime2);
 
             using (var connection = _context.CreateConnection())
             {
-                await connection.ExecuteAsync(query, parameters);
-            }
+                var addedUser = await connection.QueryFirstAsync<User>(query, parameters);
+                return addedUser;
+            }           
         }
 
         public async Task<IEnumerable<User>> GetAll()

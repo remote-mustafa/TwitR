@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using System;
-using System.Threading.Tasks;
+using TwitR.Hubs;
 using TwitR.Models.Concrete;
 using TwitR.Repositories.Abstract;
 
@@ -13,18 +14,33 @@ namespace TwitR.Controllers
     public class TweetsController : ControllerBase
     {
         private readonly IEntityRepository<User> _userRepository;
-        public TweetsController(IEntityRepository<User> userRepository)
+        public IHubContext<TweetHub> _tweetHub;
+        public TweetsController(IEntityRepository<User> userRepository, IHubContext<TweetHub> tweetHub)
         {
             _userRepository = userRepository;
+            _tweetHub = tweetHub;
+        }
+
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return Ok();
         }
 
         [HttpPost]
-        public IActionResult AddUser(string model)
+        public IActionResult AddUser(User user)
         {
-            User addedUser = JsonConvert.DeserializeObject<User>(model);
-            addedUser.CreatedDate = DateTime.Now;
-            _userRepository.AddAsync(addedUser).Wait();
-            return Content("evet");
+            var addedUser = _userRepository.AddAsync(user).Result;
+            _tweetHub.Clients.All.SendAsync("AddUser", addedUser).Wait();
+            var response = JsonConvert.SerializeObject(addedUser);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        public IActionResult GetUsers()
+        {
+            
+            return Ok();
         }
     }
 }

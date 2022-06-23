@@ -33,5 +33,14 @@ namespace TwitR.Controllers
 
             return Json(new { isSuccessful = true});
         }
+
+        [HttpPost]
+        public IActionResult AddUser(string model)
+        {
+            //User addedUser = JsonConvert.DeserializeObject<User>(model);
+            //addedUser.CreatedDate = DateTime.Now;
+            //_userRepository.AddAsync(addedUser).Wait();
+            return Ok();
+        }
     }
 }

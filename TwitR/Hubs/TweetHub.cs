@@ -5,7 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using TwitR.Controllers;
 using TwitR.Models.Concrete;
+using TwitR.Models.Entities.Concrete;
 using TwitR.RabbitMQ;
+using TwitR.Repositories.Abstract;
+using TwitR.Repositories.Concrete.Dapper;
 
 namespace TwitR.Hubs
 {
@@ -14,8 +17,17 @@ namespace TwitR.Hubs
         public static List<Tweet> TweetList { get; set; } = new List<Tweet>();
         public static List<User> LoginUsers = new List<User>();
 
+        private IEntityRepository<User> _userRepository;
+        private IEntityRepository<Message> _messageRepository;
+
         private static Dictionary<string, List<string>> _connections =
             new Dictionary<string, List<string>>();
+
+        public TweetHub(IEntityRepository<User> userRepository, IEntityRepository<Message> messageRepository)
+        {
+            _userRepository = userRepository;
+            _messageRepository = messageRepository;
+        }
 
         public short TweetCharacterLimit { get; set; } = 150;
 
@@ -57,6 +69,17 @@ namespace TwitR.Hubs
             }
         }
 
+        //public async Task AddUser()
+        //{
+        //    await Clients.Caller.SendAsync("AddUser");
+        //}
+
+        public async Task GetUsers()
+        {
+            var users =  await _userRepository.GetAll();
+            await Clients.All.SendAsync("GetUsers", users);
+        }
+
         public void AddLoginUserList(User user)
         {
             User newUser = new User();
@@ -86,6 +109,22 @@ namespace TwitR.Hubs
             {
                 await Clients.All.SendAsync("ReceieveAllTweets", tweetList);
             }
+        }
+        public async Task SendMessage(Message message, string groupName)
+        {
+            var addedMessage = await _messageRepository.AddAsync(message);
+            await Clients.Group(groupName).SendAsync("ReceiveMessage",addedMessage);
+        }
+
+        public async Task AddToMessageGroup(string groupName,string toUserId)
+        {
+            if (!GroupList.Names.Contains(groupName))
+            {
+                GroupList.Names.Add(groupName);
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                await Groups.AddToGroupAsync(toUserId, groupName);
+            }
+           
         }
     }
 }

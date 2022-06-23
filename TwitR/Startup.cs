@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,11 +29,17 @@ namespace TwitR
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews().AddNewtonsoftJson();
+            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            });
             services.AddSignalR().AddNewtonsoftJsonProtocol();
+            //services.AddSingleton<TweetHub>();
             services.AddSingleton<DapperContext>();
             services.AddScoped<IEntityRepository<User>, UserRepository>();
-            services.AddSingleton<TweetHub>();
+            services.AddScoped<IEntityRepository<Message>, MessageRepository>();
+            
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,7 +67,7 @@ namespace TwitR
                 endpoints.MapHub<TweetHub>("/TweetHub");
 
                 endpoints.MapControllerRoute(
-                    name:"api",
+                    name: "tweetapi",
                     pattern: "api/{controller=Tweets}/{action=Index}/{id?}");
 
                 endpoints.MapControllerRoute(

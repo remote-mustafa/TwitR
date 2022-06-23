@@ -10,6 +10,6 @@ namespace TwitR.Repositories.Abstract
     public interface IEntityRepository<T> where T : BaseEntity, new()
     {
         Task<IEnumerable<T>> GetAll();
-        Task AddAsync(T entity);
+        Task<T> AddAsync(T entity);
     }
 }
