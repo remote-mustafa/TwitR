@@ -103,11 +103,6 @@ namespace TwitR.Hubs
                 await Clients.All.SendAsync("ReceieveAllTweets", tweetList);
             }
         }
-        //public async Task SendMessage(Message message, string groupName)
-        //{
-        //    var addedMessage = await _messageRepository.AddAsync(message);
-        //    await Clients.Group(groupName).SendAsync("ReceiveMessage", addedMessage);
-        //}
 
         public async Task AddToMessageGroup(string groupName, string toUserId)
         {

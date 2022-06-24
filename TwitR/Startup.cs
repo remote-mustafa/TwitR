@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
@@ -63,14 +64,27 @@ namespace TwitR
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCors(policy =>
+            {
+                policy.AllowAnyHeader();
+                policy.AllowAnyMethod();
+                policy.AllowAnyOrigin();
+            });
 
             app.UseRouting();
+
+            //app.UseSignalR(opt =>
+            //{
+            //    opt.MapHub<TweetHub>("/WinTweetHub");
+            //});
+            
 
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<TweetHub>("/TweetHub");
+                endpoints.MapHub<TweetHub>("/WinTweetHub");
 
                 endpoints.MapControllerRoute(
                     name: "tweetapi",
