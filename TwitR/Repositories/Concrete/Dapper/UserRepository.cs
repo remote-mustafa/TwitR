@@ -39,7 +39,7 @@ namespace TwitR.Repositories.Concrete.Dapper
             }           
         }
 
-        public async Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<User>> GetAllAsync()
         {
             string query = "SELECT * FROM Users";
 

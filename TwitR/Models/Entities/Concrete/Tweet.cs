@@ -6,7 +6,6 @@ namespace TwitR.Models.Concrete
     {
         public string TweetText { get; set; }
         public int UserId { get; set; }
-
         public User User { get; set; }
 
     }

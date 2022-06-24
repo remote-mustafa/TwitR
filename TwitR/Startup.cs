@@ -11,6 +11,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using TwitR.Hubs;
 using TwitR.Models.Concrete;
+using TwitR.RabbitMQ;
+using TwitR.RabbitMQ.Abstract;
+using TwitR.RabbitMQ.Concrete;
 using TwitR.Repositories.Abstract;
 using TwitR.Repositories.Concrete.Dapper;
 using TwitR.Repositories.Concrete.Dapper.Context;
@@ -34,12 +37,15 @@ namespace TwitR
                 options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             });
             services.AddSignalR().AddNewtonsoftJsonProtocol();
-            //services.AddSingleton<TweetHub>();
+
             services.AddSingleton<DapperContext>();
+
             services.AddScoped<IEntityRepository<User>, UserRepository>();
             services.AddScoped<IEntityRepository<Message>, MessageRepository>();
-            
-            
+            services.AddScoped<IEntityRepository<Tweet>,TweetRepository>();
+            services.AddScoped<ITwitRCommand,RabbitHandler>();
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

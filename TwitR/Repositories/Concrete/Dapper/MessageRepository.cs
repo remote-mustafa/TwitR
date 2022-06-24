@@ -33,12 +33,12 @@ namespace TwitR.Repositories.Concrete.Dapper
 
             using (var connection = _context.CreateConnection())
             {
-                var addedMessage = await connection.QueryAsync<Message>(query, parameters);
-                return addedMessage.FirstOrDefault();
+                var addedMessage = await connection.QueryFirstAsync<Message>(query, parameters);
+                return addedMessage;
             }
         }
 
-        public async Task<IEnumerable<Message>> GetAll()
+        public async Task<IEnumerable<Message>> GetAllAsync()
         {
             string query = "SELECT * FROM Messages";
 

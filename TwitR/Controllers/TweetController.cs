@@ -17,30 +17,21 @@ namespace TwitR.Controllers
             return View();
         }
 
-        [HttpPost]
-        public JsonResult Index(string model)
-        {
-            var tweet = JsonConvert.DeserializeObject<Tweet>(model);
+        //[HttpPost]
+        //public JsonResult Index(string model)
+        //{
+        //    var tweet = JsonConvert.DeserializeObject<Tweet>(model);
 
-            Handler rabbitHandler = new Handler();
+        //    RabbitHandler rabbitHandler = new RabbitHandler();
 
-            bool result = rabbitHandler.SendTwitToQueue(tweet);
+        //    bool result = rabbitHandler.AddTweetToQueue(tweet);
 
-            if (result)
-            {
-                rabbitHandler.GetTwitFormQueue();
-            }
+        //    if (result)
+        //    {
+        //        rabbitHandler.GetTweetFromQueue();
+        //    }
 
-            return Json(new { isSuccessful = true});
-        }
-
-        [HttpPost]
-        public IActionResult AddUser(string model)
-        {
-            //User addedUser = JsonConvert.DeserializeObject<User>(model);
-            //addedUser.CreatedDate = DateTime.Now;
-            //_userRepository.AddAsync(addedUser).Wait();
-            return Ok();
-        }
+        //    return Json(new { isSuccessful = true});
+        //}
     }
 }
